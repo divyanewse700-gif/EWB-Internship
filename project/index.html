@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f5f3ee">
+  <title>Inventory — Product Analytics</title>
+  <style>
+    :root { color-scheme: light; --ink:#202923; --muted:#778078; --line:#e6e7e0; --paper:#fff; --bg:#f5f6f2; --green:#26734d; --lime:#d9f27b; --amber:#f2c46d; --red:#b85645; }
+    * { box-sizing:border-box; }
+    body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.5 Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; }
+    .shell { max-width:1120px; margin:0 auto; padding:38px 28px 60px; }
+    header { display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:36px; }
+    .brand { display:flex; align-items:center; gap:12px; font-weight:750; letter-spacing:-.03em; font-size:18px; }
+    .mark { display:grid; place-items:center; width:38px; height:38px; border-radius:13px; background:var(--green); color:white; font-size:20px; }
+    .eyebrow { color:var(--green); text-transform:uppercase; letter-spacing:.13em; font-size:11px; font-weight:750; }
+    h1 { font-size:clamp(30px,5vw,46px); line-height:1.08; letter-spacing:-.055em; margin:8px 0 10px; }
+    .intro { color:var(--muted); margin:0; max-width:540px; }
+    .topline { display:flex; justify-content:space-between; align-items:flex-end; gap:24px; margin-bottom:27px; }
+    .date { color:var(--muted); font-size:13px; padding-bottom:5px; }
+    .stats { display:grid; grid-template-columns:repeat(3,1fr); gap:15px; margin-bottom:18px; }
+    .card { background:var(--paper); border:1px solid var(--line); border-radius:18px; }
+    .stat { padding:20px 22px; }
+    .stat-label { color:var(--muted); font-size:13px; }
+    .stat-value { font-size:30px; font-weight:750; letter-spacing:-.05em; margin-top:7px; }
+    .stat-note { color:var(--muted); font-size:12px; margin-top:3px; }
+    .main-card { padding:22px; }
+    .section-head { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:18px; }
+    h2 { margin:0; font-size:18px; letter-spacing:-.025em; }
+    .count { color:var(--muted); font-size:13px; margin-left:8px; font-weight:500; }
+    button { font:inherit; cursor:pointer; }
+    .primary { border:0; border-radius:11px; background:var(--green); color:white; font-weight:650; padding:11px 16px; }
+    .primary:hover { background:#1d5d3d; }
+    .toolbar { display:flex; gap:10px; align-items:center; margin-bottom:15px; }
+    .search { flex:1; min-width:120px; }
+    input, select { border:1px solid var(--line); background:#fff; border-radius:10px; padding:10px 12px; color:var(--ink); font:inherit; }
+    input:focus, select:focus { outline:2px solid #b4d8bd; border-color:var(--green); }
+    table { border-collapse:collapse; width:100%; text-align:left; }
+    th { color:var(--muted); font-size:11px; text-transform:uppercase; letter-spacing:.09em; font-weight:650; padding:11px 10px; }
+    td { padding:15px 10px; border-top:1px solid var(--line); }
+    .product-cell { display:flex; align-items:center; gap:11px; font-weight:650; }
+    .product-icon { width:35px; height:35px; border-radius:11px; display:grid; place-items:center; background:#f0f4e6; font-size:17px; }
+    .badge { padding:5px 9px; border-radius:99px; font-size:12px; font-weight:650; }
+    .Budget { color:#477239; background:#eef6db; } .Standard { color:#8a6320; background:#fff4dd; } .Premium { color:#654f9a; background:#f0ebfa; }
+    .remove { border:0; background:transparent; color:#a2a9a2; padding:5px 8px; border-radius:8px; }
+    .remove:hover { color:var(--red); background:#fff0ed; }
+    .empty { padding:34px 10px; text-align:center; color:var(--muted); }
+    .bottom-grid { display:grid; grid-template-columns:1.1fr .9fr; gap:15px; margin-top:15px; }
+    .analytics, .adjust { padding:21px 22px; }
+    .subhead { color:var(--muted); font-size:13px; margin:5px 0 15px; }
+    .report { display:flex; flex-wrap:wrap; gap:8px; }
+    .report-tag { padding:7px 10px; border:1px solid var(--line); border-radius:9px; font:12px ui-monospace, SFMono-Regular, Consolas, monospace; }
+    .adjust-row { display:flex; align-items:center; gap:9px; flex-wrap:wrap; }
+    .adjust-row label { color:var(--muted); font-size:13px; }
+    .adjust-row input { width:78px; }
+    .adjusted { margin-top:17px; font-size:13px; color:var(--muted); }
+    .adjusted strong { display:block; color:var(--ink); font-size:25px; letter-spacing:-.04em; }
+    footer { color:var(--muted); font-size:12px; text-align:center; margin-top:24px; }
+    dialog { border:0; border-radius:18px; width:min(420px,calc(100% - 28px)); padding:0; box-shadow:0 24px 80px #16251d33; }
+    dialog::backdrop { background:#12201977; backdrop-filter:blur(3px); }
+    .dialog-body { padding:24px; } .dialog-body h2 { font-size:22px; margin-bottom:18px; }
+    .field { display:grid; gap:6px; margin:13px 0; font-size:13px; font-weight:600; }
+    .dialog-actions { display:flex; justify-content:flex-end; gap:9px; margin-top:20px; }
+    .secondary { border:1px solid var(--line); border-radius:10px; padding:10px 14px; background:white; }
+    .error { color:var(--red); min-height:20px; font-size:13px; }
+    @media (max-width:700px) { .shell{padding:24px 15px 40px}.topline{align-items:flex-start;flex-direction:column;gap:10px}.stats{gap:9px}.stat{padding:15px}.stat-value{font-size:23px}.main-card{padding:15px}.bottom-grid{grid-template-columns:1fr}th,td{padding:12px 6px}.hide-mobile{display:none} }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header>
+      <div class="brand"><span class="mark">▦</span> Fieldnote <span style="color:#9aa39b;font-weight:500">/ Inventory</span></div>
+      <div class="eyebrow">Product operations</div>
+    </header>
+    <section class="topline">
+      <div><div class="eyebrow">Overview</div><h1>Inventory, in focus.</h1><p class="intro">A clear view of your products, their value, and what fits your budget.</p></div>
+      <div class="date" id="today"></div>
+    </section>
+    <section class="stats" aria-label="Inventory summary">
+      <article class="card stat"><div class="stat-label">Inventory value</div><div class="stat-value" id="totalValue">$0</div><div class="stat-note">Across all products</div></article>
+      <article class="card stat"><div class="stat-label">Products in stock</div><div class="stat-value" id="productCount">0</div><div class="stat-note">Unique items in your roster</div></article>
+      <article class="card stat"><div class="stat-label">Under $200</div><div class="stat-value" id="affordableCount">0</div><div class="stat-note">Affordable products</div></article>
+    </section>
+    <section class="card main-card">
+      <div class="section-head"><h2>Product roster <span class="count" id="rosterCount"></span></h2><button class="primary" id="openDialog">＋ Add product</button></div>
+      <div class="toolbar"><input class="search" id="search" type="search" placeholder="Search products…" aria-label="Search products"><select id="categoryFilter" aria-label="Filter by category"><option value="All">All categories</option><option>Budget</option><option>Standard</option><option>Premium</option></select></div>
+      <div style="overflow-x:auto"><table><thead><tr><th>Product</th><th>Price</th><th>Category</th><th class="hide-mobile">Added</th><th></th></tr></thead><tbody id="productRows"></tbody></table></div>
+    </section>
+    <section class="bottom-grid">
+      <article class="card analytics"><h2>Quick analytics</h2><p class="subhead">Affordable items and formatted report (map)</p><div class="report" id="report"></div></article>
+      <article class="card adjust"><h2>Price adjustment</h2><p class="subhead">Estimate the total with tax and discount.</p><div class="adjust-row"><label for="tax">Tax</label><input id="tax" type="number" min="0" max="100" value="8"><span>%</span><label for="discount">Discount</label><input id="discount" type="number" min="0" max="100" value="5"><span>%</span></div><div class="adjusted">Adjusted inventory value<strong id="adjustedTotal">$0</strong></div></article>
+    </section>
+    <footer>Interactive Product Inventory &amp; Analytics Dashboard · Built with JavaScript</footer>
+  </main>
+  <dialog id="productDialog"><form class="dialog-body" id="productForm"><h2>Add a product</h2><label class="field">Product name<input name="name" required maxlength="50" placeholder="e.g. Monitor"></label><label class="field">Price in dollars<input name="price" required type="number" min="0" step="0.01" placeholder="e.g. 150"></label><div class="error" id="formError" role="status"></div><div class="dialog-actions"><button class="secondary" type="button" id="cancelDialog">Cancel</button><button class="primary" type="submit">Add product</button></div></form></dialog>
+  <script>
+    const inventory = [
+      { name: "Laptop", price: 800, icon: "💻", added: "Today" },
+      { name: "Mouse", price: 25, icon: "🖱️", added: "Today" },
+    ];
+    const thresholds = { budgetMax: 100, standardMax: 500 };
+    const money = (value) => new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 2 }).format(value);
+    const getCategory = (price) => {
+      if (price <= thresholds.budgetMax) return "Budget";
+      if (price <= thresholds.standardMax) return "Standard";
+      return "Premium";
+    };
+    const iconFor = (name) => ({ laptop:"💻", mouse:"🖱️", monitor:"🖥️", keyboard:"⌨️", phone:"📱", tablet:"📱", headphones:"🎧", camera:"📷" })[name.toLowerCase()] || "📦";
+    const total = () => inventory.reduce((sum, item) => sum + item.price, 0);
+    const rows = document.querySelector("#productRows");
+    const search = document.querySelector("#search");
+    const categoryFilter = document.querySelector("#categoryFilter");
+
+    function render() {
+      const totalValue = total();
+      const affordable = inventory.filter((item) => item.price < 200);
+      const report = inventory.map((item) => `${item.name.toUpperCase()}: ${money(item.price)}`);
+      document.querySelector("#totalValue").textContent = money(totalValue);
+      document.querySelector("#productCount").textContent = inventory.length;
+      document.querySelector("#affordableCount").textContent = affordable.length;
+      document.querySelector("#rosterCount").textContent = `${inventory.length} ${inventory.length === 1 ? "item" : "items"}`;
+      const visible = inventory.filter((item) => item.name.toLowerCase().includes(search.value.trim().toLowerCase()) && (categoryFilter.value === "All" || getCategory(item.price) === categoryFilter.value));
+      rows.innerHTML = "";
+      if (!visible.length) {
+        rows.innerHTML = `<tr><td colspan="5" class="empty">${inventory.length ? "No products match your search." : "No products yet. Add one to get started."}</td></tr>`;
+      } else {
+        visible.forEach((item) => {
+          const tr = document.createElement("tr");
+          const nameCell = document.createElement("td"); nameCell.innerHTML = `<div class="product-cell"><span class="product-icon">${item.icon}</span><span></span></div>`; nameCell.querySelector("span:last-child").textContent = item.name;
+          const priceCell = document.createElement("td"); priceCell.textContent = money(item.price);
+          const catCell = document.createElement("td"); const badge = document.createElement("span"); badge.className = `badge ${getCategory(item.price)}`; badge.textContent = getCategory(item.price); catCell.append(badge);
+          const addedCell = document.createElement("td"); addedCell.className = "hide-mobile"; addedCell.textContent = item.added;
+          const actionCell = document.createElement("td"); const remove = document.createElement("button"); remove.className = "remove"; remove.type = "button"; remove.textContent = "×"; remove.setAttribute("aria-label", `Remove ${item.name}`); remove.addEventListener("click", () => { const index = inventory.indexOf(item); if (index >= 0) inventory.splice(index, 1); render(); }); actionCell.append(remove);
+          tr.append(nameCell, priceCell, catCell, addedCell, actionCell); rows.append(tr);
+        });
+      }
+      document.querySelector("#report").innerHTML = "";
+      if (!affordable.length) document.querySelector("#report").innerHTML = '<span class="subhead">No products currently under $200.</span>';
+      affordable.forEach((item) => { const tag = document.createElement("span"); tag.className = "report-tag"; tag.textContent = `${item.name} · ${money(item.price)}`; document.querySelector("#report").append(tag); });
+      const adjusted = totalValue * (1 + Number(document.querySelector("#tax").value || 0) / 100) * (1 - Number(document.querySelector("#discount").value || 0) / 100);
+      document.querySelector("#adjustedTotal").textContent = money(adjusted);
+    }
+
+    document.querySelector("#today").textContent = new Intl.DateTimeFormat("en", { weekday:"long", month:"long", day:"numeric", year:"numeric" }).format(new Date());
+    document.querySelector("#openDialog").addEventListener("click", () => { document.querySelector("#formError").textContent = ""; document.querySelector("#productDialog").showModal(); });
+    document.querySelector("#cancelDialog").addEventListener("click", () => document.querySelector("#productDialog").close());
+    document.querySelector("#productForm").addEventListener("submit", (event) => {
+      event.preventDefault();
+      const form = event.currentTarget;
+      const name = form.elements.name.value.trim();
+      const priceInput = form.elements.price.value;
+      const price = Number(priceInput);
+      if (!name || priceInput === "" || !Number.isFinite(price) || price < 0) { document.querySelector("#formError").textContent = "Enter a product name and a valid, non-negative price."; return; }
+      if (inventory.some((item) => item.name.toLowerCase() === name.toLowerCase())) { document.querySelector("#formError").textContent = "That product already exists. Try another name."; return; }
+      inventory.push({ name, price, icon: iconFor(name), added: "Just now" });
+      form.reset(); document.querySelector("#productDialog").close(); render();
+    });
+    search.addEventListener("input", render); categoryFilter.addEventListener("change", render);
+    document.querySelector("#tax").addEventListener("input", render); document.querySelector("#discount").addEventListener("input", render);
+    render();
+  </script>
+</body>
+</html>
+
